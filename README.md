@@ -19,7 +19,7 @@ Class autoloading and dependencies are managed by `composer` so install it:
 $ curl --silent https://getcomposer.org/installer | php
 ```
 
-And then install the library dependencies and genereta the `autoload.php` file:
+And then install the library dependencies and generate the `autoload.php` file:
 
     $ php composer.phar install
     
