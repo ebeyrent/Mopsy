@@ -1,0 +1,20 @@
+{
+    "name": "ebeyrent/Mopsy",
+    "type": "library",
+    "description": "AMQP Tools",
+    "keywords": ["library", "AMQP", "RabbitMQ", "PHPAMQPLib", "Thumper", "Mopsy"],
+    "homepage": "git://github.com/ebeyrent/Mopsy.git",
+    "autoload": {
+        "psr-0": {"Mopsy": "lib"}
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "git://github.com/videlalvaro/php-amqplib.git"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.3",
+        "videlalvaro/php-amqplib" : "master-dev"
+    }
+}
