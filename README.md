@@ -28,19 +28,20 @@ And then install the library dependencies and genereta the `autoload.php` file:
 
 ```php
 <?php
-require_once 'Mopsy/Autoloader.php';
-Mopsy\Autoloader::registerAutoloadPath('/path/to/Mopsy/lib/Mopsy');
+require_once '/site/vendor/mopsy/vendor/autoload.php';
+
+define('AMQP_DEBUG', true);
 
 $connection = Mopsy\AMQP\Service::createAMQPConnection(
     new Mopsy\Connection\Configuration());
 
 $producer = new Mopsy\Producer(new Mopsy\Container(), $connection);
-$producer->setConsumerTag('rabbits')
-    ->setRoutingKey('rabbits')
+$producer->enableDebug()
+    ->setConsumerTag('responsys')
+    ->setRoutingKey('responsys')
     ->setExchangeOptions(Mopsy\Channel\Options::getInstance()
-        ->setName('rabbits-exchange')
-        ->setType('direct')
-        ->publish(Mopsy\AMQP\Service::createAMQPMessage('foo'));
-
+        ->setName('responsys-exchange')
+        ->setType('direct'))
+    ->publish(Mopsy\AMQP\Service::createAMQPMessage('foo'));
 ?>
 ```    
