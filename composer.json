@@ -1,5 +1,5 @@
 {
-    "name": "ebeyrent/Mopsy",
+    "name": "ebeyrent/mopsy",
     "type": "library",
     "description": "AMQP Tools",
     "keywords": ["library", "AMQP", "RabbitMQ", "PHPAMQPLib", "Thumper", "Mopsy"],
