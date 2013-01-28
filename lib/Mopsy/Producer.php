@@ -1,20 +1,6 @@
 <?php
 
 /**
- *
- *
- * PHP Version 5
- *
- * @category
- * @package
- * @author   Erich Beyrent <erich.beyrent@pearson.com>
- * @license  Pearson http://polaris.fen.com/
- * @version  $Revision$
- * @link     $HeadURL$
- *
- */
-
-/**
  * The MIT License
  *
  * Copyright (c) 2010 Alvaro Videla
@@ -41,6 +27,7 @@
  * @category Mopsy
  * @package Mopsy
  */
+
 namespace Mopsy;
 
 use Mopsy\Connection;
@@ -83,7 +70,7 @@ class Producer extends Connection
      *
      * @return \Mopsy\Producer
      */
-    public function publish(AMQPMessage $message)
+    public function publish(Message $message)
     {
         if (!$this->exchangeReady) {
             $this->channel->exchange_declare($this->exchangeOptions->getName(),
