@@ -15,9 +15,12 @@
  */
 
 namespace Mopsy;
+
 use PhpAmqpLib\Message\AMQPMessage;
 
 use Mopsy\Connection;
+use Mopsy\Channel\Options;
+
 use InvalidArgumentException;
 
 class Consumer extends Connection
@@ -169,7 +172,7 @@ class Consumer extends Connection
      */
     public function setDeadLetterExchange($exchangeName)
     {
-        $this->setDeadLetterExchange($exchangeName);
+        $this->deadLetterExchange = $exchangeName;
 
         $args = array(
             'x-dead-letter-exchange' => $exchangeName,
@@ -191,7 +194,7 @@ class Consumer extends Connection
      */
     public function setDeadLetterRoutingKey($routingKey)
     {
-        $this->setDeadLetterRoutingKey($routingKey);
+        $this->deadLetterRoutingKey = $routingKey;
 
         $args = array(
             'x-dead-letter-routing-key' => $routingKey,
