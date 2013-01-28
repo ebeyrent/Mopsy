@@ -29,8 +29,7 @@ And then install the library dependencies and genereta the `autoload.php` file:
 ```php
 <?php
 require_once 'Mopsy/Autoloader.php';
-Mopsy\Autoloader::registerAutoloadPath('/home/vbeyrer/s/Mopsy/lib/Mopsy');
-Mopsy\Autoloader::registerAutoloadPath('/site/lib/Responsys');
+Mopsy\Autoloader::registerAutoloadPath('/path/to/Mopsy/lib/Mopsy');
 
 $connection = Mopsy\AMQP\Service::createAMQPConnection(
     new Mopsy\Connection\Configuration());
