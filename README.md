@@ -30,8 +30,6 @@ And then install the library dependencies and generate the `autoload.php` file:
 <?php
 require_once '/path/to/mopsy/vendor/autoload.php';
 
-define('AMQP_DEBUG', true);
-
 $connection = Mopsy\AMQP\Service::createAMQPConnection(
     new Mopsy\Connection\Configuration());
 
@@ -45,3 +43,15 @@ $producer->setConsumerTag('rabbits')
 ?>
 
 ```    
+
+## Debugging ##
+
+If you want to know what's going on at a protocol level then add the following 
+constant to your code:
+
+    <?php
+    define('AMQP_DEBUG', true);
+
+    ... more code
+
+    ?>
