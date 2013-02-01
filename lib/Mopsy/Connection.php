@@ -3,7 +3,7 @@
 /**
  * The MIT License
  *
- * Copyright (c) 2010 Alvaro Videla
+ * Copyright (c) 2013 Erich Beyrent
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,10 @@
 
 namespace Mopsy;
 
+use Mopsy\Connection\Configuration;
+
 use Mopsy\Container;
+use Mopsy\Channel;
 use Mopsy\Channel\Options;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Connection\AMQPConnection;
@@ -40,16 +43,33 @@ class Connection
 {
     /**
      *
+     * @var Mopsy\Container
+     */
+    protected $container;
+
+    /**
+     *
      * @var AMQPConnection
      */
     protected $connection;
 
+    /**
+     *
+     * @var Mopsy\Connection\Configuration
+     */
+    protected $configuration;
 
     /**
      *
-     * @var AMQPChannel
+     * @var Mopsy\Channel
      */
     protected $channel;
+
+    /**
+     *
+     * @var array
+     */
+    protected $channels = array();
 
     /**
      *
@@ -89,17 +109,50 @@ class Connection
      * @param AMQPChannel|null $channel
      */
     public function __construct(Container $container,
-        AMQPConnection $connection,
-        AMQPChannel $channel = null)
+        Configuration $configuration,
+        Channel $channel = null)
     {
-        $this->connection = $connection;
-        $this->channel = empty($channel) ? $this->connection->channel() : $channel;
+        $this->container = $container;
+        $this->configuration = $configuration;
 
-        $container->set('AMQPConnection', $this->connection);
-        $container->set('AMQPChannel', $this->channel);
+        // Create a new instance of the AMQPConnection object
+        $this->connection = $container->newInstance('PhpAmqpLib\Connection\AMQPConnection', array(
+            $configuration->getHost(),
+            $configuration->getPort(),
+            $configuration->getUser(),
+            $configuration->getPass(),
+        ));
+
+        if($channel === null) {
+            //$this->channel = $this->connection->channel();
+            $this->channel = $container->newInstance('Mopsy\Channel', array(
+                $this,
+                $this->connection->get_free_channel_id(),
+                true,
+            ));
+        }
+        else {
+            $this->channel = $channel;
+        }
+
+        $this->channels[$this->channel->getChannelId()] = $this->channel;
+        $this->connection->channels[$this->channel->getChannelId()] = $this->channel;
 
         $this->exchangeOptions = $container->newInstance('Mopsy\Channel\Options');
         $this->queueOptions = $container->newInstance('Mopsy\Channel\Options');
+
+        /*
+         * Queues will expire after 30 minutes of being unused, meaning it has
+         * no consumers, has not been redeclared, and basic.get has not been
+         * invoked.
+         *
+         * Messages will be discard from this queue if they haven't been
+         * acknowledged after 60 seconds.
+         */
+        $this->queueOptions->setArguments(array(
+            'x-message-ttl', 60000,
+            'x-expires' => 1800000,
+        ));
     }
 
     /**
@@ -121,23 +174,65 @@ class Connection
     }
 
     /**
-     * Static Initializer
+     * Static initializer
      *
-     * @param Mopsy\Container $container
-     * @param AMQPConnection $connection
-     * @param AMQPChannel $channel
+     * @param Container $container
+     * @param Configuration $configuration
+     * @param Mopsy\Channel $channel
      *
      * @return \Mopsy\Connection
      */
     public static function getInstance(Container $container,
-        AMQPConnection $connection, AMQPChannel $channel = null)
+        Configuration $configuration,
+        Channel $channel = null)
     {
-        return new self($container, $connection, $channel);
+        return new self($container, $configuration, $channel);
     }
 
     /**
      *
-     * @return \Mopsy\Connection
+     * @param int $channelId
+     *
+     * @return \Mopsy\Channel
+     */
+    public function getChannel($channelId = null)
+    {
+        if($channelId === null) {
+            return $this->channel;
+        }
+        return $this->channels[$channelId];
+    }
+
+    /**
+     *
+     * @return \Mopsy\Container
+     */
+    public function getContainer()
+    {
+        return $this->container;
+    }
+
+    /**
+     *
+     * @return \PhpAmqpLib\Connection\AMQPConnection
+     */
+    public function getAMQPConnection()
+    {
+        return $this->connection;
+    }
+
+    /**
+     *
+     * @return \Mopsy\Connection\Configuration
+     */
+    public function getConfiguration()
+    {
+        return $this->configuration;
+    }
+
+    /**
+     *
+     * @return \Mopsy\Connection - Provides fluent interface
      */
     public function enableDebug()
     {
@@ -147,7 +242,7 @@ class Connection
 
     /**
      *
-     * @return \Mopsy\Connection
+     * @return \Mopsy\Connection - Provides fluent interface
      */
     public function disableDebug()
     {
@@ -157,9 +252,20 @@ class Connection
 
     /**
      *
+     * @return \Mopsy\Channel\Options
+     */
+    public function getExchangeOptions()
+    {
+        return $this->exchangeOptions;
+    }
+
+    /**
+     *
      * @param Options $options
+     *
      * @throws InvalidArgumentException
-     * @return \Mopsy\Connection
+     *
+     * @return \Mopsy\Connection - Provides fluent interface
      */
     public function setExchangeOptions(Options $options)
     {
@@ -182,10 +288,11 @@ class Connection
 
     /**
      *
-     * @param unknown_type $options
-     * @return \Mopsy\Connection
+     * @param Options $options
+     *
+     * @return \Mopsy\Connection - Provides fluent interface
      */
-    public function setQueueOptions($options)
+    public function setQueueOptions(Options $options)
     {
         $this->queueOptions = $options;
         return $this;
@@ -194,7 +301,8 @@ class Connection
     /**
      *
      * @param string $routingKey
-     * @return \Mopsy\Connection
+     *
+     * @return \Mopsy\Connection - Provides fluent interface
      */
     public function setRoutingKey($routingKey)
     {
@@ -220,7 +328,7 @@ class Connection
      *
      * @param string $consumerTag
      *
-     * @return \Mopsy\Connection
+     * @return \Mopsy\Connection - Provides fluent interface
      */
     public function setConsumerTag($consumerTag)
     {

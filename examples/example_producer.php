@@ -6,9 +6,8 @@ $connection = Mopsy\AMQP\Service::createAMQPConnection(
     new Mopsy\Connection\Configuration());
 
 $producer = new Mopsy\Producer(new Mopsy\Container(), $connection);
-$producer->setConsumerTag('rabbits')
-    ->setRoutingKey('rabbits')
+$producer
     ->setExchangeOptions(Mopsy\Channel\Options::getInstance()
         ->setName('rabbits-exchange')
         ->setType('direct'))
-    ->publish(Mopsy\AMQP\Service::createAMQPMessage('foo'));
+    ->publish(new Mopsy\Message('foo'));

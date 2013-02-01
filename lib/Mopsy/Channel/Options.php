@@ -3,7 +3,7 @@
 /**
  * The MIT License
  *
- * Copyright (c) 2010 Alvaro Videla
+ * Copyright (c) 2013 Erich Beyrent
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -338,7 +338,4 @@ class Options
         $this->ticket = $ticket;
         return $this;
     }
-
-
-
 }

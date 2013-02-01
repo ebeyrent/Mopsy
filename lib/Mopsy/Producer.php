@@ -3,7 +3,7 @@
 /**
  * The MIT License
  *
- * Copyright (c) 2010 Alvaro Videla
+ * Copyright (c) 2013 Erich Beyrent
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,9 +31,9 @@
 namespace Mopsy;
 
 use Mopsy\Connection;
+use Mopsy\Channel\Options;
 use PhpAmqpLib\Connection\AMQPConnection;
 use PhpAmqpLib\Channel\AMQPChannel;
-use PhpAmqpLib\Message\AMQPMessage;
 
 class Producer extends Connection
 {
@@ -44,18 +44,13 @@ class Producer extends Connection
     protected $exchangeReady = false;
 
     /**
-    public function __construct(AMQPConnection $connection,
-        AMQPChannel $channel = null, $consumerTag = null) {
-        parent::__construct($connection, $channel, $consumerTag);
-    }
-    **/
-
-    /**
+     * Static initializer
      *
      * @param Container $container
      * @param AMQPConnection $connection
      * @param AMQPChannel $channel
-     * @return \Mopsy\Producer
+     *
+     * @return \Mopsy\Producer - Provides fluent interface
      */
     public static function getInstance(Container $container,
         AMQPConnection $connection, AMQPChannel $channel = null)
@@ -64,31 +59,39 @@ class Producer extends Connection
     }
 
     /**
+     * Sets up the exchange options for the connection
+     *
+     * (non-PHPdoc)
+     * @see \Mopsy\Connection::setExchangeOptions()
+     *
+     * @return Mopsy\Producer - Provides fluent interface
+     */
+    public function setExchangeOptions(Options $options)
+    {
+        parent::setExchangeOptions($options);
+        return $this;
+    }
+
+    /**
      * Publish a message to RabbitMQ
      *
      * @param AMQPMessage $message
      *
-     * @return \Mopsy\Producer
+     * @return \Mopsy\Producer - Provides fluent interface
      */
     public function publish(Message $message)
     {
+        // Declare the exchange if it hasn't already been declared
         if (!$this->exchangeReady) {
-            $this->channel->exchange_declare($this->exchangeOptions->getName(),
-                $this->exchangeOptions->getType(),
-                $this->exchangeOptions->getPassive(),
-                $this->exchangeOptions->getDurable(),
-                $this->exchangeOptions->getAutoDelete(),
-                $this->exchangeOptions->getInternal(),
-                $this->exchangeOptions->getNowait(),
-                $this->exchangeOptions->getArguments(),
-                $this->exchangeOptions->getTicket());
-
+            $this->channel->declareExchange($this->exchangeOptions);
             $this->exchangeReady = true;
         }
 
+        // Publish the message
         $this->channel->basic_publish($message,
-            $this->exchangeOptions->getName(), $this->routingKey,$mandatory,
-                $immediate, $ticket);
+            $this->exchangeOptions->getName(),
+            $this->routingKey);
+
         return $this;
     }
 }

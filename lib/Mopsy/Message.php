@@ -3,7 +3,7 @@
 /**
  * The MIT License
  *
- * Copyright (c) 2010 Alvaro Videla
+ * Copyright (c) 2013 Erich Beyrent
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,8 @@
 namespace Mopsy;
 
 use PhpAmqpLib\Wire\GenericContent;
+
+use PhpAmqpLib\Message\AMQPMessage;
 
 /**
  * A Message for use with the Channnel.basic_* methods.
@@ -61,7 +63,7 @@ class Message extends GenericContent
         "type" => "shortstr",
         "user_id" => "shortstr",
         "app_id" => "shortstr",
-        "cluster_id" => "shortstr"
+        "cluster_id" => "shortstr",
     );
 
     /**
@@ -87,14 +89,28 @@ class Message extends GenericContent
      *
      * @param string|array|object $body
      */
-    public function __construct($messageBody)
+    public function __construct($messageBody, array $properties = array())
     {
-        if(is_array($messageBody) || is_object($messageBody)) {
-            $body = json_encode($body);
-        }
-        $this->body = $body;
-        parent::__construct(array(), static::$PROPERTIES);
+        // JSON-encode all messages; getPayload() will decode the messages
+        $this->body = json_encode($messageBody, JSON_FORCE_OBJECT);
 
+        // Set default properties
+        if(empty($properties)) {
+            $properties = array(
+                'content_type' => 'text/plain',
+                'delivery_mode' => 2,
+            );
+        }
+
+        //parent::__construct($this->body, $properties);
+        parent::__construct($properties, static::$PROPERTIES);
+
+        // Discard this message after 60 seconds if not acknowledged
+        $this->set('expiration', 60000);
+
+        $this->set('application_headers', array(
+            'x-retry_count' => array('I', 0),
+        ));
     }
 
     /**
@@ -104,7 +120,7 @@ class Message extends GenericContent
      *
      * @return \Mopsy\Message - Provides fluent interface
      */
-    public static function getInstance($body)
+    public static function getInstance($body, array $properties = array())
     {
         return new self($body);
     }
@@ -117,6 +133,15 @@ class Message extends GenericContent
     public function getBody()
     {
         return $this->body;
+    }
+
+    /**
+     *
+     * @return \stdClass
+     */
+    public function getPayload()
+    {
+        return json_decode($this->body, false);
     }
 
     /**
@@ -148,11 +173,20 @@ class Message extends GenericContent
 
     /**
      *
-     * @return AMQPChannel
+     * @return Mopsy\Channel
      */
     public function getChannel()
     {
         return $this->delivery_info['channel'];
+    }
+
+    /**
+     *
+     * @return Mopsy\Consumer
+     */
+    public function getConsumer()
+    {
+        return $this->getChannel()->callbacks[$this->getConsumerTag()][0];
     }
 
     /**
@@ -224,6 +258,12 @@ class Message extends GenericContent
         return $this;
     }
 
+    /**
+     *
+     * @param array $properties
+     *
+     * @return \Mopsy\Message
+     */
     public function addProperties(array $properties)
     {
         foreach($properties as $key => $value) {

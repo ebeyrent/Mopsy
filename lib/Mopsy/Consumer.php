@@ -3,7 +3,7 @@
 /**
  * The MIT License
  *
- * Copyright (c) 2010 Alvaro Videla
+ * Copyright (c) 2013 Erich Beyrent
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,9 @@ namespace Mopsy;
 use PhpAmqpLib\Message\AMQPMessage;
 
 use Mopsy\Connection;
+use Mopsy\Message;
 use Mopsy\Channel\Options;
+use Mopsy\Producer;
 
 use InvalidArgumentException;
 
@@ -75,14 +77,15 @@ class Consumer extends Connection
      *
      * @var int
      */
-    private $maxRetries = 1;
+    private $maxRetries = 5;
 
     /**
      *
      * @param Container $container
      * @param AMQPConnection $connection
      * @param AMQPChannel $channel
-     * @return \Mopsy\Consumer
+     *
+     * @return \Mopsy\Consumer - Provides fluent interface
      */
     public static function getInstance(Container $container,
         AMQPConnection $connection, AMQPChannel $channel = null)
@@ -100,7 +103,7 @@ class Consumer extends Connection
 
     /**
      *
-     * @return \Mopsy\Consumer
+     * @return \Mopsy\Consumer - Provides fluent interface
      */
     protected function initialize()
     {
@@ -148,11 +151,23 @@ class Consumer extends Connection
      * (non-PHPdoc)
      * @see \Mopsy\Connection::setExchangeOptions()
      *
-     * @return Mopsy\Consumer - provides fluent interface
+     * @return Mopsy\Consumer - Provides fluent interface
      */
     public function setExchangeOptions(Options $options)
     {
         parent::setExchangeOptions($options);
+        return $this;
+    }
+
+    /**
+     * (non-PHPdoc)
+     * @see \Mopsy\Connection::setQueueOptions()
+     *
+     * @return Mopsy\Consumer - Provides fluent interface
+     */
+    public function setQueueOptions(Options $options)
+    {
+        parent::setQueueOptions($options);
         return $this;
     }
 
@@ -169,7 +184,7 @@ class Consumer extends Connection
      *
      * @param callable|string|array $callback
      *
-     * @return \Mopsy\Consumer
+     * @return \Mopsy\Consumer - Provides fluent interface
      */
     public function setCallback($callback)
     {
@@ -204,7 +219,7 @@ class Consumer extends Connection
      *
      * @param string $routingKey
      *
-     * @return \Mopsy\Consumer
+     * @return \Mopsy\Consumer - Provides fluent interface
      */
     public function setDeadLetterRoutingKey($routingKey)
     {
@@ -267,18 +282,62 @@ class Consumer extends Connection
      *
      * @throws Exception
      */
-    public function processMessage(Mopsy\Message $msg)
+    public function processMessage(Message $msg)
     {
-        try
-        {
-            $return = call_user_func($this->callback, $msg->getBody());
+        try {
+            try {
+                // Retrieve the retry count from the message
+                $headers = $msg->get('application_headers');
+                $retryCount = $headers['x-retry_count'][1];
+            }
+            catch(\OutOfBoundsException $e) {
+                $retryCount = 0;
+            }
+
+            // Increment the retry count
+            $retryCount++;
+
+            // Update the message headers with the new retry count
+            $msg->set('application_headers', array(
+                'x-retry_count' => array('I', $retryCount),
+            ));
+
+            // Execute the callback function
+            $return = call_user_func($this->callback, $msg);
+
             if($return === false) {
                 // Message consumption failed, handle retry logic
+                if($retryCount > $this->maxRetries) {
+                    // TODO - Dead letter the message
+                    die('TIME TO DEAD-LETTER THIS MESSAGE, retry count = '.$retryCount);
+                }
+                else {
+
+                    // Acknowledge the message
+                    $msg->getChannel()->basic_ack($msg->getDeliveryTag());
+
+                    /*
+                     * Republish the message to the exchange
+                     */
+                    $producer = new Producer($this->getContainer(),
+                        $this->getConfiguration(),
+                        $msg->getChannel());
+                    $producer->setExchangeOptions($msg->getConsumer()->getExchangeOptions());
+                    $producer->publish($msg);
+
+                    /*
+                     * Rejecting is not what we want, because the message stays
+                     * where it was in the queue, and we can't modify the
+                     * message to update the retry count.  We want to republish
+                     * the message so it gets appended to the end of the queue
+                     */
+                }
+
             }
             else {
                 $msg->getChannel()->basic_ack($msg->getDeliveryTag());
                 $this->consumed++;
-                $this->maybeStopConsumer($msg);
+                //$this->maybeStopConsumer($msg);
             }
 
         }

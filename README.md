@@ -22,7 +22,12 @@ $ curl --silent https://getcomposer.org/installer | php
 And then install the library dependencies and generate the `autoload.php` file:
 
     $ php composer.phar install
-    
+
+## Queue Server ##
+
+This example illustrates how to create a producer that will publish jobs into a 
+queue. Those jobs will be processed later by a consumer –or several of them–.
+
 ## Examples ##
 
 
@@ -55,3 +60,16 @@ constant to your code:
     ... more code
 
     ?>
+    
+# Disclaimer #
+
+This code is experimental. Its purpose is to provide a simple interface for 
+working with RabbitMQ with message failure and dead-letter functionality.
+
+However, this code is not ready for production environments.  Use at your own
+risk.
+
+# License #
+
+See LICENSE.md
+    
