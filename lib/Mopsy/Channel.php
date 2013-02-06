@@ -141,6 +141,7 @@ class Channel extends AMQPChannel
     }
 
     /**
+     * This method declares a new exchange
      *
      * @param Options $options
      *
@@ -161,6 +162,34 @@ class Channel extends AMQPChannel
             $this->exchangeOptions->getTicket());
 
         return $this;
+    }
+
+    /**
+     * This method declares a new queue
+     *
+     * @param Options $options
+     *
+     * @return string
+     */
+    public function declareQueue(Options $options)
+    {
+        $queue = $this->queue_declare($options->getName(),
+            $options->getPassive(),
+            $options->getDurable(),
+            $options->getExclusive(),
+            $options->getAutoDelete(),
+            $options->getNowait(),
+            $options->getArguments(),
+            $options->getTicket());
+
+        if(!empty($queue)) {
+            $queueName = array_shift($queue);
+        }
+        else {
+            $queueName = $options->getName();
+        }
+
+        return $queueName;
     }
 
     /**

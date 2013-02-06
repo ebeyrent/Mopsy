@@ -2,21 +2,28 @@
 
 require_once '/path/to/mopsy/vendor/autoload.php';
 
-$callback = function($message)
+$callback = function(Mopsy\Message $message)
 {
-    // Do something with $message
+    $body = $message->getPayload();
+
+    /*
+     * $body is the message body that was published.  Your callback should
+     * return true or false.  If false is returned, the message will go through
+     * a retry cycle until it is dead-lettered.
+     */
 };
 
-$connection = Mopsy\AMQP\Service::createAMQPConnection(
+$consumer = new Mopsy\Consumer(new Mopsy\Container(),
     new Mopsy\Connection\Configuration());
 
-$consumer = new Mopsy\Consumer(new Mopsy\Container(), $connection);
-$consumer->setMaxRetries(5)
+$consumer
     ->setExchangeOptions(Mopsy\Channel\Options::getInstance()
-    ->setName('rabbits-exchange')
-    ->setType('direct'))
+        ->setName('rabbits-exchange')
+        ->setType('direct'))
     ->setQueueOptions(Mopsy\Channel\Options::getInstance()
         ->setName('rabbits-queue'))
-    ->setDeadLetterExchange('dead-rabbits-exchange')
+    ->setMaxRetries(5)
+    ->setDeadLetterExchange('rabbits-exchange-dead')
+    ->setDeadLetterRoutingKey('rabbits-dead')
     ->setCallback($callback)
     ->consume(1);

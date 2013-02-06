@@ -1,17 +1,31 @@
 <?php
 
 /**
+ * The MIT License
+ *
+ * Copyright (c) 2013 Erich Beyrent
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  *
  *
- * PHP Version 5
- *
- * @category
- * @package
- * @author   Erich Beyrent <erich.beyrent@pearson.com>
- * @license  Pearson http://polaris.fen.com/
- * @version  $Revision$
- * @link     $HeadURL$
- *
+ * @category Mopsy
+ * @package Mopsy
  */
 
 namespace Mopsy;
@@ -30,8 +44,9 @@ class Container implements \ArrayAccess
      * Add an object to the container
      *
      * @param string $key The name of a service to set in the container
-     * @param mixed $value A closure of object representing a serive
-     * @return $this
+     * @param mixed $value A closure or object representing a service
+     *
+     * @return Mopsy\Container - Provides fluent interface
     */
     public function set($key, $value = null)
     {
@@ -42,12 +57,15 @@ class Container implements \ArrayAccess
     /**
      * Get an object from the container
      *
-     * @param string @key The name of a service to get from the container
+     * @param string $key The name of a service to get from the container
+     *
+     * @return mixed A closure or object representing a service
      */
     public function get($key)
     {
         if (!$this->has($key)) {
-            throw new \InvalidArgumentException(sprintf('Object %s does not exist.', $key));
+            throw new \InvalidArgumentException(
+                sprintf('Object %s does not exist.', $key));
         }
 
         if ($this->services[$key] instanceof \Closure) {
@@ -60,7 +78,7 @@ class Container implements \ArrayAccess
     /**
      * Check to see if a service has been filled into the container
      *
-     * @param string @key The name of a service to check in the container
+     * @param string $key The name of a service to check in the container
      */
     public function has($key)
     {
@@ -73,7 +91,8 @@ class Container implements \ArrayAccess
      * This method will populate any services that have been wired into the container
      *
      * @param string $class Class name to instantiate
-     * @param array $params An optional array of parameters to be passed into the constructor of a new instance
+     * @param array $params An optional array of parameters to be passed into
+     *                      the constructor of a new instance
      * @return Instance of the class sent in as a parameter
      */
     public function newInstance($class, array $params = null, array $ignore = array())

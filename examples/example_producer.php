@@ -2,12 +2,19 @@
 
 require_once '/path/to/mopsy/vendor/autoload.php';
 
-$connection = Mopsy\AMQP\Service::createAMQPConnection(
+$producer = new \Mopsy\Producer(new Mopsy\Container(),
     new Mopsy\Connection\Configuration());
 
-$producer = new Mopsy\Producer(new Mopsy\Container(), $connection);
+$content = array(
+    'action' => 'foo',
+    'options' => array(
+        'bar' => 'baz',
+        'debug' => true,
+    ),
+);
+
 $producer
     ->setExchangeOptions(Mopsy\Channel\Options::getInstance()
-        ->setName('rabbits-exchange')
+        ->setName('responsys-exchange')
         ->setType('direct'))
-    ->publish(new Mopsy\Message('foo'));
+    ->publish(new Mopsy\Message($content));

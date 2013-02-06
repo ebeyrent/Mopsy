@@ -31,7 +31,6 @@
 namespace Mopsy;
 
 use PhpAmqpLib\Wire\GenericContent;
-
 use PhpAmqpLib\Message\AMQPMessage;
 
 /**
@@ -46,7 +45,14 @@ class Message extends GenericContent
     public $body;
 
     /**
-     *
+     * The value of the expiration field describes the message TTL period in
+     * milliseconds.
+     * @var int
+     */
+    private $expiration = 0;
+
+    /**
+     * Defines RabbitMQ-supported fields
      * @var array
      */
     protected static $PROPERTIES = array(
@@ -67,22 +73,34 @@ class Message extends GenericContent
     );
 
     /**
-     *
+     * This flag tells the server how to react if the message cannot be routed
+     * to a queue. If this flag is set, the server will return an unroutable
+     * message with a Return method. If this flag is zero, the server silently
+     * drops the message.
      * @var boolean
      */
     private $mandatory = false;
 
     /**
+     * This flag tells the server how to react if the message cannot be routed
+     * to a queue consumer immediately. If this flag is set, the server will
+     * return an undeliverable message with a Return method. If this flag is
+     * zero, the server will queue the message, but with no guarantee that it
+     * will ever be consumed.
      *
+     * @deprecated
      * @var boolean
      */
     private $immediate = false;
 
     /**
+     * AMQP 0.8 originally introduced the idea of a ticket as a token generated
+     * by the server representing a cached set of permissions.
      *
+     * @deprecated
      * @var int
      */
-    private $ticket = null;
+    private $ticket = 0;
 
     /**
      * Class constructor
@@ -102,11 +120,11 @@ class Message extends GenericContent
             );
         }
 
-        //parent::__construct($this->body, $properties);
+        // Call the parent class constructor
         parent::__construct($properties, static::$PROPERTIES);
 
         // Discard this message after 60 seconds if not acknowledged
-        $this->set('expiration', 60000);
+        $this->set('expiration', $this->expiration);
 
         $this->set('application_headers', array(
             'x-retry_count' => array('I', 0),
@@ -172,6 +190,7 @@ class Message extends GenericContent
     }
 
     /**
+     * Gets the stored Channel object from the message
      *
      * @return Mopsy\Channel
      */
@@ -181,6 +200,7 @@ class Message extends GenericContent
     }
 
     /**
+     * Gets the stored Consumer object from the message
      *
      * @return Mopsy\Consumer
      */
@@ -200,23 +220,17 @@ class Message extends GenericContent
     }
 
     /**
-     * Getter method for the class data member $immediate
+     * Sets the message time-to-live.  RabbitMQ will drop the message if
+     * unacknowledged after this value, expressed in milliseconds.
      *
-     * @return boolean
-     */
-    public function getImmediate()
-    {
-        return $this->immediate;
-    }
-
-    /**
-     * Getter method for the class data member $ticket
+     * @param int $expiration
      *
-     * @return int
+     * @return \Mopsy\Message - Provides fluent interface
      */
-    public function getTicket()
+    public function setTTL($expiration)
     {
-        return $this->ticket;
+        $this->expiration = $expiration;
+        return $this;
     }
 
     /**
@@ -229,32 +243,6 @@ class Message extends GenericContent
     public function setMandatory($mandatory)
     {
         $this->mandatory = $mandatory;
-        return $this;
-    }
-
-    /**
-     * Setter method for the class data member $immediate
-     *
-     * @param boolean $immediate
-     *
-     * @return \Mopsy\Message - Provides fluent interface
-     */
-    public function setImmediate($immediate)
-    {
-        $this->immediate = $immediate;
-        return $this;
-    }
-
-    /**
-     * Setter method for the class data member $ticket
-     *
-     * @param int $ticket
-     *
-     * @return \Mopsy\Message - Provides fluent interface
-     */
-    public function setTicket($ticket)
-    {
-        $this->ticket = $ticket;
         return $this;
     }
 

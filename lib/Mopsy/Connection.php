@@ -32,12 +32,12 @@ namespace Mopsy;
 
 use Mopsy\Connection\Configuration;
 
-use Mopsy\Container;
-use Mopsy\Channel;
-use Mopsy\Channel\Options;
-use PhpAmqpLib\Channel\AMQPChannel;
-use PhpAmqpLib\Connection\AMQPConnection;
-use InvalidArgumentException;
+use \Mopsy\Container;
+use \Mopsy\Channel;
+use \Mopsy\Channel\Options;
+use \PhpAmqpLib\Channel\AMQPChannel;
+use \PhpAmqpLib\Connection\AMQPConnection;
+use \InvalidArgumentException;
 
 class Connection
 {
@@ -116,12 +116,20 @@ class Connection
         $this->configuration = $configuration;
 
         // Create a new instance of the AMQPConnection object
-        $this->connection = $container->newInstance('PhpAmqpLib\Connection\AMQPConnection', array(
+        $conn = $container->newInstance('PhpAmqpLib\Connection\AMQPConnection', array(
             $configuration->getHost(),
             $configuration->getPort(),
             $configuration->getUser(),
             $configuration->getPass(),
         ));
+
+        // Override the default library properties
+        $conn::$LIBRARY_PROPERTIES = array(
+            'library' => array('S', 'Mopsy PHP Client'),
+            'library_version' => array('S', '0.1')
+        );
+
+        $this->connection = $conn;
 
         if($channel === null) {
             //$this->channel = $this->connection->channel();
@@ -296,6 +304,15 @@ class Connection
     {
         $this->queueOptions = $options;
         return $this;
+    }
+
+    /**
+     *
+     * @return string
+     */
+    public function getRoutingKey()
+    {
+        return $this->routingKey;
     }
 
     /**

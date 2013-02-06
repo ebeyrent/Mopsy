@@ -42,31 +42,31 @@ use InvalidArgumentException;
 class Consumer extends Connection
 {
     /**
-     *
-     * @var string|array
+     * Callback function to execute when processing messages
+     * @var callable|string|array
      */
     protected $callback;
 
     /**
-     *
+     * Tracks the number of messages processed
      * @var int
      */
     protected $consumed = 0;
 
     /**
-     *
+     * Defines how many messages to process before shutting down
      * @var int
      */
     protected $target = 0;
 
     /**
-     *
+     * The name of the dead-letter exchange
      * @var string
      */
     private $deadLetterExchange = null;
 
     /**
-     *
+     * The name of the dead-letter routing key
      * @var string
      */
     private $deadLetterRoutingKey = null;
@@ -77,7 +77,7 @@ class Consumer extends Connection
      *
      * @var int
      */
-    private $maxRetries = 5;
+    private $maxRetries = 1;
 
     /**
      *
@@ -102,40 +102,25 @@ class Consumer extends Connection
     }
 
     /**
+     * This method declares the exchange and queue and binds them together.
      *
      * @return \Mopsy\Consumer - Provides fluent interface
      */
     protected function initialize()
     {
-        $this->channel->exchange_declare($this->exchangeOptions->getName(),
-            $this->exchangeOptions->getType(),
-            $this->exchangeOptions->getPassive(),
-            $this->exchangeOptions->getDurable(),
-            $this->exchangeOptions->getAutoDelete(),
-            $this->exchangeOptions->getInternal(),
-            $this->exchangeOptions->getNowait(),
-            $this->exchangeOptions->getArguments(),
-            $this->exchangeOptions->getTicket());
+        // Declare the exchange
+        $this->channel->declareExchange($this->exchangeOptions);
 
-        $queue = $this->channel->queue_declare($this->queueOptions->getName(),
-            $this->queueOptions->getPassive(),
-            $this->queueOptions->getDurable(),
-            $this->queueOptions->getExclusive(),
-            $this->queueOptions->getAutoDelete(),
-            $this->queueOptions->getNowait(),
-            $this->queueOptions->getArguments(),
-            $this->queueOptions->getTicket());
+        // Declare the queue
+        $queueName = $this->channel->declareQueue($this->queueOptions);
 
-        if(!empty($queue)) {
-            $queueName = array_shift($queue);
-        }
-        else {
-            $queueName = $this->queueOptions->getName();
-        }
-
+        // Bind the queue to the exchange
         $this->channel->queue_bind($queueName, $this->exchangeOptions->getName(),
             $this->routingKey);
 
+        $this->initializeDeadLetterQueue();
+
+        // Start consuming messages from the queue
         $this->channel->basic_consume($queueName,
             $this->getConsumerTag(),
             false,
@@ -144,6 +129,46 @@ class Consumer extends Connection
             false,
             array($this, 'processMessage'));
 
+        return $this;
+    }
+
+    /**
+     * This method declares the dead-letter exchange and queue and binds them
+     * together.
+     *
+     * @return \Mopsy\Consumer - Provides fluent interface
+     */
+    protected function initializeDeadLetterQueue()
+    {
+        // If a dead-letter exchange has been set, declare the exchange
+        if(!empty($this->deadLetterExchange)) {
+
+            /* @var $options Options */
+            $options = $this->container->newInstance('Mopsy\Channel\Options');
+            $options->setName($this->deadLetterExchange)
+                ->setType('topic')
+                ->setDurable(true)
+                ->setPassive(false)
+                ->setAutoDelete(false);
+            $this->channel->declareExchange($options);
+
+            // If the dead-letter queue has been set, declare the queue
+            if(!empty($this->deadLetterRoutingKey)) {
+
+                /* @var $options Options */
+                $options = $this->container->newInstance('Mopsy\Channel\Options');
+                $options->setName($this->deadLetterRoutingKey)
+                    ->setDurable(true)
+                    ->setPassive(false)
+                    ->setAutoDelete(false);
+                $deadQueue = $this->channel->declareQueue($options);
+            }
+
+            // Bind the dead letter queue to the exchange
+            $this->channel->queue_bind($this->deadLetterRoutingKey,
+                $this->deadLetterExchange,
+                $this->deadLetterRoutingKey);
+        }
         return $this;
     }
 
@@ -172,6 +197,7 @@ class Consumer extends Connection
     }
 
     /**
+     * Gets the number of messages that have been consumed
      *
      * @return number
      */
@@ -181,6 +207,17 @@ class Consumer extends Connection
     }
 
     /**
+     * Gets the dead-letter routing key
+     *
+     * @return string
+     */
+    public function getDeadLetterRoutingKey()
+    {
+        return $this->deadLetterRoutingKey;
+    }
+
+    /**
+     * Sets the callback function to execute when processing a message
      *
      * @param callable|string|array $callback
      *
@@ -204,18 +241,17 @@ class Consumer extends Connection
         $this->deadLetterExchange = $exchangeName;
 
         $args = array(
-            'x-dead-letter-exchange' => $exchangeName,
+            'x-dead-letter-exchange' => array('S', $exchangeName),
         );
 
-        $newArgs = array_intersect($this->queueOptions->getArguments(), $args);
+        $newArgs = array_merge($this->queueOptions->getArguments(), $args);
         $this->queueOptions->setArguments($newArgs);
         return $this;
     }
 
     /**
-     * Sets the routing key to be used when dead-lettering messages.
-     *
-     * @internal If this is not set, the message's own routing keys will be used.
+     * Sets the routing key to be used when dead-lettering messages. If this is
+     * not set, the message's own routing keys will be used.
      *
      * @param string $routingKey
      *
@@ -226,10 +262,10 @@ class Consumer extends Connection
         $this->deadLetterRoutingKey = $routingKey;
 
         $args = array(
-            'x-dead-letter-routing-key' => $routingKey,
+            'x-dead-letter-routing-key' => array('S', $routingKey),
         );
 
-        $newArgs = array_intersect($this->queueOptions->getArguments(), $args);
+        $newArgs = array_merge($this->queueOptions->getArguments(), $args);
         $this->queueOptions->setArguments($newArgs);
         return $this;
     }
@@ -263,7 +299,7 @@ class Consumer extends Connection
      *
      * @param int $msgAmount
      */
-    public function consume($msgAmount)
+    public function consume($msgAmount = null)
     {
         $this->target = $msgAmount;
 
@@ -285,8 +321,9 @@ class Consumer extends Connection
     public function processMessage(Message $msg)
     {
         try {
+
+            // Retrieve the retry count from the message
             try {
-                // Retrieve the retry count from the message
                 $headers = $msg->get('application_headers');
                 $retryCount = $headers['x-retry_count'][1];
             }
@@ -305,41 +342,38 @@ class Consumer extends Connection
             // Execute the callback function
             $return = call_user_func($this->callback, $msg);
 
+            // Message consumption failed, handle retry logic
             if($return === false) {
-                // Message consumption failed, handle retry logic
                 if($retryCount > $this->maxRetries) {
-                    // TODO - Dead letter the message
-                    die('TIME TO DEAD-LETTER THIS MESSAGE, retry count = '.$retryCount);
+                    if(! empty($this->deadLetterExchange)) {
+                        $this->deadLetterMessage($msg);
+                    }
+                    else {
+                        /*
+                         *  Dead letter routing hasn't been configured, so just
+                         *  reject the message.
+                         */
+                        $msg->getChannel()
+                            ->basic_reject($msg->getDeliveryTag(), FALSE);
+                    }
                 }
                 else {
-
-                    // Acknowledge the message
-                    $msg->getChannel()->basic_ack($msg->getDeliveryTag());
-
-                    /*
-                     * Republish the message to the exchange
-                     */
-                    $producer = new Producer($this->getContainer(),
-                        $this->getConfiguration(),
-                        $msg->getChannel());
-                    $producer->setExchangeOptions($msg->getConsumer()->getExchangeOptions());
-                    $producer->publish($msg);
-
-                    /*
-                     * Rejecting is not what we want, because the message stays
-                     * where it was in the queue, and we can't modify the
-                     * message to update the retry count.  We want to republish
-                     * the message so it gets appended to the end of the queue
-                     */
+                    $this->republishMessage($msg);
                 }
-
             }
             else {
+                // Acknowledge the message as received
                 $msg->getChannel()->basic_ack($msg->getDeliveryTag());
                 $this->consumed++;
-                //$this->maybeStopConsumer($msg);
-            }
 
+                /*
+                 * If the consumer has processed the amount of messages
+                 * alotted, shut it down.
+                 */
+                if($this->consumed == $this->target) {
+                    $msg->getChannel()->basic_cancel($msg->getConsumerTag());
+                }
+            }
         }
         catch (\Exception $e)
         {
@@ -348,14 +382,93 @@ class Consumer extends Connection
     }
 
     /**
+     * This method takes a Message object and republishes it to the message's
+     * exchange so that it can be reprocessed by the same or another consumer.
      *
-     * @param Mopsy\Message $msg
+     * @param Message $msg
+     *
+     * @return \Mopsy\Consumer - Provides fluent interface
      */
-    protected function maybeStopConsumer(Mopsy\Message $msg)
+    public function republishMessage(Message $msg)
     {
-        if($this->consumed == $this->target)
-        {
-            $msg->getChannel()->basic_cancel($msg->getConsumerTag());
+        // Acknowledge the message
+        $msg->getChannel()->basic_ack($msg->getDeliveryTag());
+        $msg->delivery_info['redelivered'] = 1;
+
+        /*
+         * Republish the message to the exchange
+         */
+        $producer = new Producer($this->getContainer(),
+            $this->getConfiguration(),
+            $msg->getChannel());
+        $producer->setExchangeOptions($msg->getConsumer()->getExchangeOptions());
+        $producer->publish($msg);
+
+        return $this;
+    }
+
+    /**
+     * This method takes a Message object and acks it before publishing it to
+     * the specified dead-letter exchange.  Simply rejecting the message does
+     * not allow the message to be modified.
+     *
+     * @param Message $msg
+     *
+     * @return \Mopsy\Consumer - Provides fluent interface
+     */
+    public function deadLetterMessage(Message $msg)
+    {
+        $routingKey = $msg->getConsumer()->getRoutingKey();
+        $deadLetterRoutingKey = $msg->getConsumer()
+            ->getDeadLetterRoutingKey();
+
+        if(!empty($deadLetterRoutingKey)) {
+            $routingKey = $deadLetterRoutingKey;
         }
+
+        /*
+         * Add details to the message to explain why it was
+         * dead-lettered
+         */
+        $headers = array(
+            'queue' => array(
+                'S',
+                $msg->getConsumer()->getRoutingKey(),
+            ),
+            'reason' => array('S', 'rejected'),
+            'time' => array('T', time()),
+            'exchange' => array(
+                'S',
+                $msg->getConsumer()->getExchangeOptions()->getName(),
+            ),
+            'routing-keys' => array(
+                'A',
+                array(
+                    $msg->getConsumer()->getRoutingKey(),
+                    $deadLetterRoutingKey,
+                ),
+            ),
+        );
+        $msg->set('application_headers', array(
+            'x-death' => array('A', array($headers))
+        ));
+
+        /*
+         * Override the message expiration so that it doesn't
+         * get dropped from the dead-letter exchange until it
+         * has been processed.
+         */
+        $msg->set('expiration', 0);
+
+        // Ack the message so it gets dropped from its queue
+        $msg->getChannel()->basic_ack($msg->getDeliveryTag());
+
+        // Publish the message to the dead-letter exchange
+        $msg->getChannel()->basic_publish(
+            $msg,
+            $this->deadLetterExchange,
+            $routingKey);
+
+        return $this;
     }
 }
