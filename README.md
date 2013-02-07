@@ -37,24 +37,29 @@ Examples are in the examples directory.
 ```php
 <?php
 require_once '/path/to/mopsy/vendor/autoload.php';
-
-$connection = Mopsy\AMQP\Service::createAMQPConnection(
+$producer = new \Mopsy\Producer(new Mopsy\Container(),
     new Mopsy\Connection\Configuration());
 
-$producer = new Mopsy\Producer(new Mopsy\Container(), $connection);
-$producer->setConsumerTag('rabbits')
-    ->setRoutingKey('rabbits')
+$content = array(
+    'action' => 'foo',
+    'options' => array(
+        'bar' => 'baz',
+        'debug' => true,
+    ),
+);
+
+$producer
     ->setExchangeOptions(Mopsy\Channel\Options::getInstance()
-        ->setName('rabbits-exchange')
+        ->setName('responsys-exchange')
         ->setType('direct'))
-    ->publish(Mopsy\AMQP\Service::createAMQPMessage('foo'));
+    ->publish(new Mopsy\Message($content));
 ?>
 
 ```    
 ### Queue Server ###
 
 This example illustrates how to create a producer that will publish jobs into a 
-queue. Those jobs will be processed later by a consumer –or several of them–.
+queue. Those jobs will be processed later by a consumer ï¿½or several of themï¿½.
 
 ## Debugging ##
 
