@@ -30,13 +30,11 @@
 
 namespace Mopsy;
 
-use Mopsy\Message;
 use Mopsy\Channel\Options;
 
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Exception\AMQPRuntimeException;
 use PhpAmqpLib\Helper\MiscHelper;
-use PhpAmqpLib\Wire\AMQPReader;
 
 class Channel extends AMQPChannel
 {

@@ -30,14 +30,10 @@
 
 namespace Mopsy;
 
-use PhpAmqpLib\Message\AMQPMessage;
-
 use Mopsy\Connection;
 use Mopsy\Message;
 use Mopsy\Channel\Options;
 use Mopsy\Producer;
-
-use \InvalidArgumentException;
 
 class Consumer extends Connection
 {

@@ -31,7 +31,6 @@
 namespace Mopsy;
 
 use PhpAmqpLib\Wire\GenericContent;
-use PhpAmqpLib\Message\AMQPMessage;
 
 /**
  * A Message for use with the Channnel.basic_* methods.
