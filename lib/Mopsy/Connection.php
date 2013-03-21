@@ -32,11 +32,11 @@ namespace Mopsy;
 
 use Mopsy\Connection\Configuration;
 
-use \Mopsy\Container;
-use \Mopsy\Channel;
-use \Mopsy\Channel\Options;
-use \PhpAmqpLib\Channel\AMQPChannel;
-use \PhpAmqpLib\Connection\AMQPConnection;
+use Mopsy\Container;
+use Mopsy\Channel;
+use Mopsy\Channel\Options;
+use PhpAmqpLib\Channel\AMQPChannel;
+use PhpAmqpLib\Connection\AMQPConnection;
 use \InvalidArgumentException;
 
 class Connection

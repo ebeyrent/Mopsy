@@ -37,7 +37,7 @@ use Mopsy\Message;
 use Mopsy\Channel\Options;
 use Mopsy\Producer;
 
-use InvalidArgumentException;
+use \InvalidArgumentException;
 
 class Consumer extends Connection
 {
