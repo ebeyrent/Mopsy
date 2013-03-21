@@ -60,7 +60,7 @@ class Options
      *
      * @var boolean
      */
-    protected $auto_delete = true;
+    protected $auto_delete = false;
 
     /**
      *
