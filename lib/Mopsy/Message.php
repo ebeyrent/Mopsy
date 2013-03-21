@@ -140,7 +140,7 @@ class Message extends GenericContent
      */
     public static function getInstance($body, array $properties = array())
     {
-        return new self($body);
+        return new self($body, $properties);
     }
 
     /**
