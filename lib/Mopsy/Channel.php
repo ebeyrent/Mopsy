@@ -75,10 +75,11 @@ class Channel extends AMQPChannel
      * @param int $channel_id
      * @param boolean $auto_decode
      */
-    public function __construct(Connection $connection,
+    public function __construct(
+        Connection $connection,
         $channel_id = 0,
-        $auto_decode = true)
-    {
+        $auto_decode = true
+    ) {
         parent::__construct($connection->getAMQPConnection(), $channel_id, $auto_decode);
         $this->container = $connection->getContainer();
         $this->auto_decode = $auto_decode;
@@ -93,10 +94,11 @@ class Channel extends AMQPChannel
      *
      * @return \Mopsy\Channel - Provides fluent interface
      */
-    public static function getInstance(Connection $connection,
+    public static function getInstance(
+        Connection $connection,
         $channel_id = 0,
-        $auto_decode = true)
-    {
+        $auto_decode = true
+    ) {
         return new self($connection, $channel_id, $auto_decode);
     }
 
@@ -149,7 +151,8 @@ class Channel extends AMQPChannel
     {
         $this->exchangeOptions = $options;
 
-        $this->exchange_declare($this->exchangeOptions->getName(),
+        $this->exchange_declare(
+            $this->exchangeOptions->getName(),
             $this->exchangeOptions->getType(),
             $this->exchangeOptions->getPassive(),
             $this->exchangeOptions->getDurable(),
@@ -157,7 +160,8 @@ class Channel extends AMQPChannel
             $this->exchangeOptions->getInternal(),
             $this->exchangeOptions->getNowait(),
             $this->exchangeOptions->getArguments(),
-            $this->exchangeOptions->getTicket());
+            $this->exchangeOptions->getTicket()
+        );
 
         return $this;
     }
@@ -171,19 +175,20 @@ class Channel extends AMQPChannel
      */
     public function declareQueue(Options $options)
     {
-        $queue = $this->queue_declare($options->getName(),
+        $queue = $this->queue_declare(
+            $options->getName(),
             $options->getPassive(),
             $options->getDurable(),
             $options->getExclusive(),
             $options->getAutoDelete(),
             $options->getNowait(),
             $options->getArguments(),
-            $options->getTicket());
+            $options->getTicket()
+        );
 
-        if(!empty($queue)) {
+        if (!empty($queue)) {
             $queueName = array_shift($queue);
-        }
-        else {
+        } else {
             $queueName = $options->getName();
         }
 
@@ -219,10 +224,10 @@ class Channel extends AMQPChannel
         }
 
         /* @var $payload_reader AMQPReader */
-        $payload_reader = $this->container
-            ->newInstance('PhpAmqpLib\Wire\AMQPReader', array(
-                substr($payload,0,12),
-            ));
+        $payload_reader = $this->container->newInstance(
+            'PhpAmqpLib\Wire\AMQPReader',
+            array(substr($payload, 0, 12))
+        );
 
         $class_id = $payload_reader->read_short();
         $weight = $payload_reader->read_short();
@@ -231,32 +236,33 @@ class Channel extends AMQPChannel
 
         /* @var $msg Message */
         $msg = $this->container->newInstance('Mopsy\Message', array(array()));
-        $msg->load_properties(substr($payload,12));
+        $msg->load_properties(substr($payload, 12));
 
         $body_parts = array();
         $body_received = 0;
 
-        while (bccomp($body_size,$body_received) == 1) {
+        while (bccomp($body_size, $body_received) == 1) {
             $frame = $this->next_frame();
             $frame_type = $frame[0];
             $payload = $frame[1];
 
             if ($frame_type != 3) {
-                throw new AMQPRuntimeException("Expecting Content body, received frame type $frame_type ("
-                    .self::$FRAME_TYPES[$frame_type].")");
+                throw new AMQPRuntimeException(
+                    "Expecting Content body, received frame type $frame_type ("
+                    .self::$FRAME_TYPES[$frame_type].")"
+                );
             }
 
             $body_parts[] = $payload;
             $body_received = bcadd($body_received, strlen($payload));
         }
 
-        $msg->body = implode("",$body_parts);
+        $msg->body = implode("", $body_parts);
 
         if ($this->auto_decode && isset($msg->content_encoding)) {
             try {
                 $msg->body = $msg->body->decode($msg->content_encoding);
-            }
-            catch (\Exception $e) {
+            } catch (\Exception $e) {
                 if ($this->debug) {
                     MiscHelper::debug_msg("Ignoring body decoding exception: " . $e->getMessage());
                 }

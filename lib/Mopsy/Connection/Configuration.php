@@ -122,7 +122,7 @@ class Configuration
         return new self();
     }
 
-	/**
+    /**
      * Getter method for the $host data member
      *
      * @return string $host
@@ -132,7 +132,7 @@ class Configuration
         return $this->host;
     }
 
-	/**
+    /**
      * Getter method for the $port data member
      *
      * @return number $port
@@ -142,7 +142,7 @@ class Configuration
         return $this->port;
     }
 
-	/**
+    /**
      * Getter method for the $user data member
      *
      * @return string $user
@@ -152,7 +152,7 @@ class Configuration
         return $this->user;
     }
 
-	/**
+    /**
      * Getter method for the $pass data member
      *
      * @return string $pass
@@ -162,7 +162,7 @@ class Configuration
         return $this->pass;
     }
 
-	/**
+    /**
      * Getter method for the $vhost data member
      *
      * @return string $vhost
@@ -172,7 +172,7 @@ class Configuration
         return $this->vhost;
     }
 
-	/**
+    /**
      * Getter method for the $insist data member
      *
      * @return boolean $insist
@@ -182,7 +182,7 @@ class Configuration
         return $this->insist;
     }
 
-	/**
+    /**
      * Getter method for the $loginMethod data member
      *
      * @return string $loginMethod
@@ -192,7 +192,7 @@ class Configuration
         return $this->loginMethod;
     }
 
-	/**
+    /**
      * Getter method for the $loginResponse data member
      *
      * @return string $loginResponse
@@ -202,7 +202,7 @@ class Configuration
         return $this->loginResponse;
     }
 
-	/**
+    /**
      * Getter method for the $locale data member
      *
      * @return string $locale
@@ -212,7 +212,7 @@ class Configuration
         return $this->locale;
     }
 
-	/**
+    /**
      * Getter method for the $connectionTimeout data member
      *
      * @return number $connectionTimeout
@@ -222,7 +222,7 @@ class Configuration
         return $this->connectionTimeout;
     }
 
-	/**
+    /**
      * Getter method for the $readWriteTimeout data member
      *
      * @return number $readWriteTimeout
@@ -232,7 +232,7 @@ class Configuration
         return $this->readWriteTimeout;
     }
 
-	/**
+    /**
      * Getter method for the $context data member
      *
      * @return resource $context
@@ -242,7 +242,7 @@ class Configuration
         return $this->context;
     }
 
-	/**
+    /**
      * Setter method for the $host data member
      *
      * @param string $host
@@ -254,7 +254,7 @@ class Configuration
         return $this;
     }
 
-	/**
+    /**
      * Setter method for the $port data member
      *
      * @param number $port
@@ -266,7 +266,7 @@ class Configuration
         return $this;
     }
 
-	/**
+    /**
      * Setter method for the $user data member
      *
      * @param string $user
@@ -278,7 +278,7 @@ class Configuration
         return $this;
     }
 
-	/**
+    /**
      * Setter method for the $pass data member
      *
      * @param string $pass
@@ -290,7 +290,7 @@ class Configuration
         return $this;
     }
 
-	/**
+    /**
      * Setter method for the $vhost data member
      *
      * @param string $vhost
@@ -302,7 +302,7 @@ class Configuration
         return $this;
     }
 
-	/**
+    /**
      * Setter method for the $insist data member
      *
      * @param boolean $insist
@@ -314,7 +314,7 @@ class Configuration
         return $this;
     }
 
-	/**
+    /**
      * Setter method for the $loginMethod data member
      *
      * @param string $loginMethod
@@ -326,7 +326,7 @@ class Configuration
         return $this;
     }
 
-	/**
+    /**
      * Setter method for the $loginResponse data member
      *
      * @param string $loginResponse
@@ -338,7 +338,7 @@ class Configuration
         return $this;
     }
 
-	/**
+    /**
      * Setter method for the $locale data member
      *
      * @param string $locale
@@ -350,7 +350,7 @@ class Configuration
         return $this;
     }
 
-	/**
+    /**
      * Setter method for the $connectionTimeout data member
      *
      * @param number $connectionTimeout
@@ -362,7 +362,7 @@ class Configuration
         return $this;
     }
 
-	/**
+    /**
      * Setter method for the $readWriteTimeout data member
      *
      * @param number $readWriteTimeout
@@ -374,7 +374,7 @@ class Configuration
         return $this;
     }
 
-	/**
+    /**
      * Setter method for the $context data member
      *
      * @param resource $context

@@ -64,8 +64,7 @@ class Container implements \ArrayAccess
     public function get($key)
     {
         if (!$this->has($key)) {
-            throw new \InvalidArgumentException(
-                sprintf('Object %s does not exist.', $key));
+            throw new \InvalidArgumentException("Object $key does not exist.");
         }
 
         if ($this->services[$key] instanceof \Closure) {
@@ -193,7 +192,7 @@ class Container implements \ArrayAccess
      */
     public function offsetUnset($key)
     {
-        throw new \BadFunctionCallException("Not implemented!");
+        throw new \BadFunctionCallException("Not implemented! [offsetUnset($key)]");
     }
 
     /**

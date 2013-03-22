@@ -108,20 +108,24 @@ class Connection
      * @param AMQPConnection $connection
      * @param AMQPChannel|null $channel
      */
-    public function __construct(Container $container,
+    public function __construct(
+        Container $container,
         Configuration $configuration,
-        Channel $channel = null)
-    {
+        Channel $channel = null
+    ) {
         $this->container = $container;
         $this->configuration = $configuration;
 
         // Create a new instance of the AMQPConnection object
-        $conn = $container->newInstance('PhpAmqpLib\Connection\AMQPConnection', array(
-            $configuration->getHost(),
-            $configuration->getPort(),
-            $configuration->getUser(),
-            $configuration->getPass(),
-        ));
+        $conn = $container->newInstance(
+            'PhpAmqpLib\Connection\AMQPConnection',
+            array(
+                $configuration->getHost(),
+                $configuration->getPort(),
+                $configuration->getUser(),
+                $configuration->getPass()
+            )
+        );
 
         // Override the default library properties
         $conn::$LIBRARY_PROPERTIES = array(
@@ -131,15 +135,17 @@ class Connection
 
         $this->connection = $conn;
 
-        if($channel === null) {
+        if ($channel === null) {
             //$this->channel = $this->connection->channel();
-            $this->channel = $container->newInstance('Mopsy\Channel', array(
-                $this,
-                $this->connection->get_free_channel_id(),
-                true,
-            ));
-        }
-        else {
+            $this->channel = $container->newInstance(
+                'Mopsy\Channel',
+                array(
+                    $this,
+                    $this->connection->get_free_channel_id(),
+                    true,
+                )
+            );
+        } else {
             $this->channel = $channel;
         }
 
@@ -157,10 +163,12 @@ class Connection
          * Messages will be discard from this queue if they haven't been
          * acknowledged after 60 seconds.
          */
-        $this->queueOptions->setArguments(array(
-            'x-message-ttl', 60000,
-            'x-expires' => 1800000,
-        ));
+        $this->queueOptions->setArguments(
+            array(
+                'x-message-ttl', 60000,
+                'x-expires' => 1800000,
+            )
+        );
     }
 
     /**
@@ -190,10 +198,11 @@ class Connection
      *
      * @return \Mopsy\Connection
      */
-    public static function getInstance(Container $container,
+    public static function getInstance(
+        Container $container,
         Configuration $configuration,
-        Channel $channel = null)
-    {
+        Channel $channel = null
+    ) {
         return new self($container, $configuration, $channel);
     }
 
@@ -205,7 +214,7 @@ class Connection
      */
     public function getChannel($channelId = null)
     {
-        if($channelId === null) {
+        if ($channelId === null) {
             return $this->channel;
         }
         return $this->channels[$channelId];
@@ -280,13 +289,11 @@ class Connection
         $name = $options->getName();
         $type = $options->getType();
 
-        if(empty($name))
-        {
+        if (empty($name)) {
             throw new InvalidArgumentException('You must provide an exchange name');
         }
 
-        if(empty($type))
-        {
+        if (empty($type)) {
             throw new InvalidArgumentException('You must provide an exchange type');
         }
 
@@ -334,7 +341,7 @@ class Connection
      */
     protected function getConsumerTag()
     {
-        if(empty($this->consumerTag)) {
+        if (empty($this->consumerTag)) {
             return sprintf("PHPPROCESS_%s_%s", gethostname(), getmypid());
         }
 
@@ -352,5 +359,4 @@ class Connection
         $this->consumerTag = $consumerTag;
         return $this;
     }
-
 }

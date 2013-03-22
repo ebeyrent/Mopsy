@@ -112,7 +112,7 @@ class Message extends GenericContent
         $this->body = json_encode($messageBody, JSON_FORCE_OBJECT);
 
         // Set default properties
-        if(empty($properties)) {
+        if (empty($properties)) {
             $properties = array(
                 'content_type' => 'text/plain',
                 'delivery_mode' => 2,
@@ -125,9 +125,10 @@ class Message extends GenericContent
         // Discard this message after 60 seconds if not acknowledged
         $this->set('expiration', $this->expiration);
 
-        $this->set('application_headers', array(
-            'x-retry_count' => array('I', 0),
-        ));
+        $this->set(
+            'application_headers',
+            array('x-retry_count' => array('I', 0))
+        );
     }
 
     /**
@@ -253,11 +254,10 @@ class Message extends GenericContent
      */
     public function addProperties(array $properties)
     {
-        foreach($properties as $key => $value) {
+        foreach ($properties as $key => $value) {
             $this->set($key, $value);
         }
 
         return $this;
     }
-
 }

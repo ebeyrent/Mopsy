@@ -83,9 +83,11 @@ class Consumer extends Connection
      *
      * @return \Mopsy\Consumer - Provides fluent interface
      */
-    public static function getInstance(Container $container,
-        AMQPConnection $connection, AMQPChannel $channel = null)
-    {
+    public static function getInstance(
+        Container $container,
+        AMQPConnection $connection,
+        AMQPChannel $channel = null
+    ) {
         return new self($container, $connection, $channel);
     }
 
@@ -111,19 +113,24 @@ class Consumer extends Connection
         $queueName = $this->channel->declareQueue($this->queueOptions);
 
         // Bind the queue to the exchange
-        $this->channel->queue_bind($queueName, $this->exchangeOptions->getName(),
-            $this->routingKey);
+        $this->channel->queue_bind(
+            $queueName,
+            $this->exchangeOptions->getName(),
+            $this->routingKey
+        );
 
         $this->initializeDeadLetterQueue();
 
         // Start consuming messages from the queue
-        $this->channel->basic_consume($queueName,
+        $this->channel->basic_consume(
+            $queueName,
             $this->getConsumerTag(),
             false,
             false,
             false,
             false,
-            array($this, 'processMessage'));
+            array($this, 'processMessage')
+        );
 
         return $this;
     }
@@ -137,7 +144,7 @@ class Consumer extends Connection
     protected function initializeDeadLetterQueue()
     {
         // If a dead-letter exchange has been set, declare the exchange
-        if(!empty($this->deadLetterExchange)) {
+        if (!empty($this->deadLetterExchange)) {
 
             /* @var $options Options */
             $options = $this->container->newInstance('Mopsy\Channel\Options');
@@ -149,7 +156,7 @@ class Consumer extends Connection
             $this->channel->declareExchange($options);
 
             // If the dead-letter queue has been set, declare the queue
-            if(!empty($this->deadLetterRoutingKey)) {
+            if (!empty($this->deadLetterRoutingKey)) {
 
                 /* @var $options Options */
                 $options = $this->container->newInstance('Mopsy\Channel\Options');
@@ -161,9 +168,11 @@ class Consumer extends Connection
             }
 
             // Bind the dead letter queue to the exchange
-            $this->channel->queue_bind($this->deadLetterRoutingKey,
+            $this->channel->queue_bind(
+                $this->deadLetterRoutingKey,
                 $this->deadLetterExchange,
-                $this->deadLetterRoutingKey);
+                $this->deadLetterRoutingKey
+            );
         }
         return $this;
     }
@@ -301,8 +310,7 @@ class Consumer extends Connection
 
         $this->initialize();
 
-        while(count($this->channel->callbacks))
-        {
+        while (count($this->channel->callbacks)) {
             $this->channel->wait();
         }
     }
@@ -317,13 +325,12 @@ class Consumer extends Connection
     public function processMessage(Message $msg)
     {
         try {
-
+            
             // Retrieve the retry count from the message
             try {
                 $headers = $msg->get('application_headers');
                 $retryCount = $headers['x-retry_count'][1];
-            }
-            catch(\OutOfBoundsException $e) {
+            } catch (\OutOfBoundsException $e) {
                 $retryCount = 0;
             }
 
@@ -331,33 +338,31 @@ class Consumer extends Connection
             $retryCount++;
 
             // Update the message headers with the new retry count
-            $msg->set('application_headers', array(
-                'x-retry_count' => array('I', $retryCount),
-            ));
+            $msg->set(
+                'application_headers',
+                array('x-retry_count' => array('I', $retryCount))
+            );
 
             // Execute the callback function
             $return = call_user_func($this->callback, $msg);
 
             // Message consumption failed, handle retry logic
-            if($return === false) {
-                if($retryCount > $this->maxRetries) {
-                    if(! empty($this->deadLetterExchange)) {
+            if ($return === false) {
+                if ($retryCount > $this->maxRetries) {
+                    if (! empty($this->deadLetterExchange)) {
                         $this->deadLetterMessage($msg);
-                    }
-                    else {
+                    } else {
                         /*
                          *  Dead letter routing hasn't been configured, so just
                          *  reject the message.
                          */
                         $msg->getChannel()
-                            ->basic_reject($msg->getDeliveryTag(), FALSE);
+                            ->basic_reject($msg->getDeliveryTag(), false);
                     }
-                }
-                else {
+                } else {
                     $this->republishMessage($msg);
                 }
-            }
-            else {
+            } else {
                 // Acknowledge the message as received
                 $msg->getChannel()->basic_ack($msg->getDeliveryTag());
                 $this->consumed++;
@@ -366,13 +371,11 @@ class Consumer extends Connection
                  * If the consumer has processed the amount of messages
                  * alotted, shut it down.
                  */
-                if($this->consumed == $this->target) {
+                if ($this->consumed == $this->target) {
                     $msg->getChannel()->basic_cancel($msg->getConsumerTag());
                 }
             }
-        }
-        catch (\Exception $e)
-        {
+        } catch (\Exception $e) {
             throw $e;
         }
     }
@@ -394,9 +397,11 @@ class Consumer extends Connection
         /*
          * Republish the message to the exchange
          */
-        $producer = new Producer($this->getContainer(),
+        $producer = new Producer(
+            $this->getContainer(),
             $this->getConfiguration(),
-            $msg->getChannel());
+            $msg->getChannel()
+        );
         $producer->setExchangeOptions($msg->getConsumer()->getExchangeOptions());
         $producer->publish($msg);
 
@@ -418,7 +423,7 @@ class Consumer extends Connection
         $deadLetterRoutingKey = $msg->getConsumer()
             ->getDeadLetterRoutingKey();
 
-        if(!empty($deadLetterRoutingKey)) {
+        if (!empty($deadLetterRoutingKey)) {
             $routingKey = $deadLetterRoutingKey;
         }
 
@@ -445,9 +450,10 @@ class Consumer extends Connection
                 ),
             ),
         );
-        $msg->set('application_headers', array(
-            'x-death' => array('A', array($headers))
-        ));
+        $msg->set(
+            'application_headers',
+            array('x-death' => array('A', array($headers)))
+        );
 
         /*
          * Override the message expiration so that it doesn't
@@ -463,7 +469,8 @@ class Consumer extends Connection
         $msg->getChannel()->basic_publish(
             $msg,
             $this->deadLetterExchange,
-            $routingKey);
+            $routingKey
+        );
 
         return $this;
     }

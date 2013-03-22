@@ -52,9 +52,11 @@ class Producer extends Connection
      *
      * @return \Mopsy\Producer - Provides fluent interface
      */
-    public static function getInstance(Container $container,
-        AMQPConnection $connection, AMQPChannel $channel = null)
-    {
+    public static function getInstance(
+        Container $container,
+        AMQPConnection $connection,
+        AMQPChannel $channel = null
+    ) {
         return new self($container, $connection, $channel);
     }
 
@@ -88,9 +90,11 @@ class Producer extends Connection
         }
 
         // Publish the message
-        $this->channel->basic_publish($message,
+        $this->channel->basic_publish(
+            $message,
             $this->exchangeOptions->getName(),
-            $this->routingKey);
+            $this->routingKey
+        );
 
         return $this;
     }

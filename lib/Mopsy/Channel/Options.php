@@ -99,7 +99,7 @@ class Options
      * @param string $name
      * @param string $type
      */
-    public function __construct($name='', $type='')
+    public function __construct($name = '', $type = '')
     {
         $this->name = $name;
         $this->type = $type;
@@ -113,7 +113,7 @@ class Options
      *
      * @return \Mopsy\Channel\Options
      */
-    public static function getInstance($name='', $type='')
+    public static function getInstance($name = '', $type = '')
     {
         return new self($name, $type);
     }
@@ -128,7 +128,7 @@ class Options
         return $this->exclusive;
     }
 
-	/**
+    /**
      * Getter method for the $name data member
      *
      * @return string $name
@@ -138,7 +138,7 @@ class Options
         return $this->name;
     }
 
-	/**
+    /**
      * Getter method for the $type data member
      *
      * @return string $type
@@ -148,7 +148,7 @@ class Options
         return $this->type;
     }
 
-	/**
+    /**
      * Getter method for the $passive data member
      *
      * @return boolean $passive
@@ -158,7 +158,7 @@ class Options
         return $this->passive;
     }
 
-	/**
+    /**
      * Getter method for the $durable data member
      *
      * @return boolean $durable
@@ -168,7 +168,7 @@ class Options
         return $this->durable;
     }
 
-	/**
+    /**
      * Getter method for the $auto_delete data member
      *
      * @return boolean $auto_delete
@@ -178,7 +178,7 @@ class Options
         return $this->auto_delete;
     }
 
-	/**
+    /**
      * Getter method for the $internal data member
      *
      * @return boolean $internal
@@ -188,7 +188,7 @@ class Options
         return $this->internal;
     }
 
-	/**
+    /**
      * Getter method for the $nowait data member
      *
      * @return boolean $nowait
@@ -198,7 +198,7 @@ class Options
         return $this->nowait;
     }
 
-	/**
+    /**
      * Getter method for the $arguments data member
      *
      * @return multitype: $arguments
@@ -208,7 +208,7 @@ class Options
         return $this->arguments;
     }
 
-	/**
+    /**
      * Getter method for the $ticket data member
      *
      * @return number $ticket
@@ -231,7 +231,7 @@ class Options
         return $this;
     }
 
-	/**
+    /**
      * Setter method for the $name data member
      *
      * @param string $name
@@ -243,7 +243,7 @@ class Options
         return $this;
     }
 
-	/**
+    /**
      * Setter method for the $type data member
      *
      * @param string $type
@@ -255,7 +255,7 @@ class Options
         return $this;
     }
 
-	/**
+    /**
      * Setter method for the $passive data member
      *
      * @param boolean $passive
@@ -267,7 +267,7 @@ class Options
         return $this;
     }
 
-	/**
+    /**
      * Setter method for the $durable data member
      *
      * @param boolean $durable
@@ -279,7 +279,7 @@ class Options
         return $this;
     }
 
-	/**
+    /**
      * Setter method for the $auto_delete data member
      *
      * @param boolean $auto_delete
@@ -291,7 +291,7 @@ class Options
         return $this;
     }
 
-	/**
+    /**
      * Setter method for the $internal data member
      *
      * @param boolean $internal
@@ -303,7 +303,7 @@ class Options
         return $this;
     }
 
-	/**
+    /**
      * Setter method for the $nowait data member
      *
      * @param boolean $nowait
@@ -315,7 +315,7 @@ class Options
         return $this;
     }
 
-	/**
+    /**
      * Setter method for the $arguments data member
      *
      * @param multitype: $arguments
@@ -327,7 +327,7 @@ class Options
         return $this;
     }
 
-	/**
+    /**
      * Setter method for the $ticket data member
      *
      * @param number $ticket
