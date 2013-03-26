@@ -229,8 +229,10 @@ class Channel extends AMQPChannel
             array(substr($payload, 0, 12))
         );
 
-        $class_id = $payload_reader->read_short();
-        $weight = $payload_reader->read_short();
+        // read_short() is like readline
+        // calls must be made - but assignment is not used
+        $payload_reader->read_short(); // $class_id =
+        $payload_reader->read_short(); // $weight =
 
         $body_size = $payload_reader->read_longlong();
 

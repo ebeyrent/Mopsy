@@ -92,14 +92,6 @@ class Consumer extends Connection
     }
 
     /**
-     * Class destructor
-     */
-    public function __destruct()
-    {
-        parent::__destruct();
-    }
-
-    /**
      * This method declares the exchange and queue and binds them together.
      *
      * @return \Mopsy\Consumer - Provides fluent interface
@@ -164,7 +156,7 @@ class Consumer extends Connection
                     ->setDurable(true)
                     ->setPassive(false)
                     ->setAutoDelete(false);
-                $deadQueue = $this->channel->declareQueue($options);
+                $this->channel->declareQueue($options);
             }
 
             // Bind the dead letter queue to the exchange
