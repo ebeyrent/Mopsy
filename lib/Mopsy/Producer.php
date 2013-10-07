@@ -30,10 +30,11 @@
 
 namespace Mopsy;
 
-use Mopsy\Connection;
+use Mopsy\Channel;
 use Mopsy\Channel\Options;
-use PhpAmqpLib\Connection\AMQPConnection;
-use PhpAmqpLib\Channel\AMQPChannel;
+use Mopsy\Container;
+use Mopsy\Connection;
+use Mopsy\Connection\Configuration;
 
 class Producer extends Connection
 {

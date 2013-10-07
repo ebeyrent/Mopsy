@@ -30,9 +30,12 @@
 
 namespace Mopsy;
 
-use Mopsy\Connection;
-use Mopsy\Message;
+use Mopsy\Channel;
 use Mopsy\Channel\Options;
+use Mopsy\Container;
+use Mopsy\Connection;
+use Mopsy\Connection\Configuration;
+use Mopsy\Message;
 use Mopsy\Producer;
 
 class Consumer extends Connection
