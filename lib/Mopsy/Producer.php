@@ -47,17 +47,17 @@ class Producer extends Connection
      * Static initializer
      *
      * @param Container $container
-     * @param AMQPConnection $connection
-     * @param AMQPChannel $channel
+     * @param Configuration $configuration
+     * @param Mopsy\Channel $channel
      *
-     * @return \Mopsy\Producer - Provides fluent interface
+     * @return \Mopsy\Connection
      */
     public static function getInstance(
         Container $container,
-        AMQPConnection $connection,
-        AMQPChannel $channel = null
+        Configuration $configuration,
+        Channel $channel = null
     ) {
-        return new self($container, $connection, $channel);
+        return new self($container, $configuration, $channel);
     }
 
     /**
