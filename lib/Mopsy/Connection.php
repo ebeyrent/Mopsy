@@ -44,7 +44,7 @@ class Connection
 
     /**
      *
-     * @var Connection
+     * @var \PhpAmqpLib\Connection\AMQPConnection
      */
     protected $connection;
 
@@ -112,6 +112,7 @@ class Connection
         $this->configuration = $configuration;
 
         // Create a new instance of the AMQPConnection object
+        /** @var \PhpAmqpLib\Connection\AMQPConnection $conn */
         $conn = $container->newInstance(
             'PhpAmqpLib\Connection\AMQPConnection',
             array(
@@ -228,7 +229,7 @@ class Connection
 
     /**
      *
-     * @return Connection
+     * @return \PhpAmqpLib\Connection\AMQPConnection
      */
     public function getAMQPConnection()
     {
