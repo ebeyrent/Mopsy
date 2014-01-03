@@ -30,11 +30,8 @@
 
 namespace Mopsy;
 
-use Mopsy\Channel;
-use Mopsy\Channel\Options;
-use Mopsy\Container;
-use Mopsy\Connection;
-use Mopsy\Connection\Configuration;
+use \Mopsy\Channel\Options;
+use \Mopsy\Connection\Configuration;
 
 class Producer extends Connection
 {
@@ -49,9 +46,9 @@ class Producer extends Connection
      *
      * @param Container $container
      * @param Configuration $configuration
-     * @param Mopsy\Channel $channel
+     * @param Channel $channel
      *
-     * @return \Mopsy\Connection
+     * @return Connection
      */
     public static function getInstance(
         Container $container,
@@ -64,10 +61,11 @@ class Producer extends Connection
     /**
      * Sets up the exchange options for the connection
      *
-     * (non-PHPdoc)
-     * @see \Mopsy\Connection::setExchangeOptions()
+     * @see Connection::setExchangeOptions()
      *
-     * @return Mopsy\Producer - Provides fluent interface
+     * @param Options $options
+     *
+     * @return $this - Producer - Provides fluent interface
      */
     public function setExchangeOptions(Options $options)
     {
@@ -76,11 +74,11 @@ class Producer extends Connection
     }
 
     /**
-     * Publish a message to RabbitMQ
+     * Publish a message to RabbitMQ.
      *
-     * @param AMQPMessage $message
+     * @param Message $message
      *
-     * @return \Mopsy\Producer - Provides fluent interface
+     * @return $this - Producer - Provides fluent interface
      */
     public function publish(Message $message)
     {

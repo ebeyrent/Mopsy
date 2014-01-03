@@ -30,13 +30,8 @@
 
 namespace Mopsy;
 
-use Mopsy\Channel;
-use Mopsy\Channel\Options;
-use Mopsy\Container;
-use Mopsy\Connection;
-use Mopsy\Connection\Configuration;
-use Mopsy\Message;
-use Mopsy\Producer;
+use \Mopsy\Channel\Options;
+use \Mopsy\Connection\Configuration;
 
 class Consumer extends Connection
 {
@@ -83,9 +78,9 @@ class Consumer extends Connection
      *
      * @param Container $container
      * @param Configuration $configuration
-     * @param Mopsy\Channel $channel
+     * @param Channel $channel
      *
-     * @return \Mopsy\Connection
+     * @return Connection
      */
     public static function getInstance(
         Container $container,
@@ -98,7 +93,7 @@ class Consumer extends Connection
     /**
      * This method declares the exchange and queue and binds them together.
      *
-     * @return \Mopsy\Consumer - Provides fluent interface
+     * @return $this Consumer - Provides fluent interface
      */
     protected function initialize()
     {
@@ -177,7 +172,9 @@ class Consumer extends Connection
      * (non-PHPdoc)
      * @see \Mopsy\Connection::setExchangeOptions()
      *
-     * @return Mopsy\Consumer - Provides fluent interface
+     * @param Options $options
+
+     * @return $this - Consumer - Provides fluent interface
      */
     public function setExchangeOptions(Options $options)
     {
@@ -189,7 +186,9 @@ class Consumer extends Connection
      * (non-PHPdoc)
      * @see \Mopsy\Connection::setQueueOptions()
      *
-     * @return Mopsy\Consumer - Provides fluent interface
+     * @param Options $options
+     *
+     * @return $this - Consumer - Provides fluent interface
      */
     public function setQueueOptions(Options $options)
     {
@@ -314,9 +313,9 @@ class Consumer extends Connection
     /**
      * Uses defined callback functions to process a given message.
      *
-     * @param Mopsy\Message $msg
+     * @param Message $msg
      *
-     * @throws Exception
+     * @throws \Exception
      */
     public function processMessage(Message $msg)
     {

@@ -46,13 +46,13 @@ class Channel extends AMQPChannel
 
     /**
      *
-     * @var Mopsy\Connection
+     * @var Connection
      */
     protected $connection;
 
     /**
      *
-     * @var Mopsy\Container
+     * @var Container
      */
     protected $container;
 
@@ -64,14 +64,14 @@ class Channel extends AMQPChannel
 
     /**
      *
-     * @var Mopsy\Channel\Options
+     * @var Channel\Options
      */
     protected $exchangeOptions;
 
     /**
      * Class constructor
      *
-     * @param Mopsy\Connection $connection
+     * @param Connection $connection
      * @param int $channel_id
      * @param boolean $auto_decode
      */
@@ -88,11 +88,11 @@ class Channel extends AMQPChannel
     /**
      * Static initializer
      *
-     * @param Mopsy\Connection $connection
+     * @param Connection $connection
      * @param int $channel_id
      * @param boolean $auto_decode
      *
-     * @return \Mopsy\Channel - Provides fluent interface
+     * @return $this - Channel - Provides fluent interface
      */
     public static function getInstance(
         Connection $connection,
@@ -104,7 +104,7 @@ class Channel extends AMQPChannel
 
     /**
      *
-     * @return Mopsy\Connection - Provides fluent interface
+     * @return Connection - Provides fluent interface
      */
     public function getConnection()
     {
@@ -122,7 +122,7 @@ class Channel extends AMQPChannel
 
     /**
      *
-     * @return \Mopsy\Channel - Provides fluent interface
+     * @return $this - Channel - Provides fluent interface
      */
     public function enableDebug()
     {
@@ -132,7 +132,7 @@ class Channel extends AMQPChannel
 
     /**
      *
-     * @return \Mopsy\Channel - Provides fluent interface
+     * @return $this - Channel - Provides fluent interface
      */
     public function disableDebug()
     {
@@ -145,7 +145,7 @@ class Channel extends AMQPChannel
      *
      * @param Options $options
      *
-     * @return \Mopsy\Channel - Provides fluent interface
+     * @return $this - Channel - Provides fluent interface
      */
     public function declareExchange(Options $options)
     {
@@ -197,7 +197,7 @@ class Channel extends AMQPChannel
 
     /**
      *
-     * @return \Mopsy\Channel\Options - Provides fluent interface
+     * @return Channel\Options - Provides fluent interface
      */
     public function getExchangeOptions()
     {
@@ -205,13 +205,15 @@ class Channel extends AMQPChannel
     }
 
     /**
-     * Overrides parent method and creates messages of type Mopsy\Message
+     * Overrides parent method and creates messages of type \Mopsy\Message
      * instead of AMQPMessage to gain extra functionality
      *
      * (non-PHPdoc)
      * @see \PhpAmqpLib\Channel\AbstractChannel::wait_content()
      *
-     * @return Mopsy\Message
+     * @return Message|\PhpAmqpLib\Message\AMQPMessage
+     * 
+     * @throws \PhpAmqpLib\Exception\AMQPRuntimeException
      */
     public function wait_content()
     {
@@ -223,7 +225,7 @@ class Channel extends AMQPChannel
             throw new AMQPRuntimeException("Expecting Content header");
         }
 
-        /* @var $payload_reader AMQPReader */
+        /* @var $payload_reader \PhpAmqpLib\Wire\AMQPReader */
         $payload_reader = $this->container->newInstance(
             'PhpAmqpLib\Wire\AMQPReader',
             array(substr($payload, 0, 12))

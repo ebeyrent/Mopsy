@@ -81,30 +81,10 @@ class Message extends GenericContent
     private $mandatory = false;
 
     /**
-     * This flag tells the server how to react if the message cannot be routed
-     * to a queue consumer immediately. If this flag is set, the server will
-     * return an undeliverable message with a Return method. If this flag is
-     * zero, the server will queue the message, but with no guarantee that it
-     * will ever be consumed.
-     *
-     * @deprecated
-     * @var boolean
-     */
-    private $immediate = false;
-
-    /**
-     * AMQP 0.8 originally introduced the idea of a ticket as a token generated
-     * by the server representing a cached set of permissions.
-     *
-     * @deprecated
-     * @var int
-     */
-    private $ticket = 0;
-
-    /**
      * Class constructor
      *
-     * @param string|array|object $body
+     * @param string|array|object $messageBody
+     * @param array $properties
      */
     public function __construct($messageBody, array $properties = array())
     {
@@ -135,8 +115,9 @@ class Message extends GenericContent
      * Static initializer
      *
      * @param string|array|object $body
+     * @param array $properties
      *
-     * @return \Mopsy\Message - Provides fluent interface
+     * @return $this Message - Provides fluent interface
      */
     public static function getInstance($body, array $properties = array())
     {
@@ -192,7 +173,7 @@ class Message extends GenericContent
     /**
      * Gets the stored Channel object from the message
      *
-     * @return Mopsy\Channel
+     * @return Channel
      */
     public function getChannel()
     {
@@ -202,7 +183,7 @@ class Message extends GenericContent
     /**
      * Gets the stored Consumer object from the message
      *
-     * @return Mopsy\Consumer
+     * @return Consumer
      */
     public function getConsumer()
     {

@@ -201,7 +201,7 @@ class Options
     /**
      * Getter method for the $arguments data member
      *
-     * @return multitype: $arguments
+     * @return array $arguments
      */
     public function getArguments()
     {

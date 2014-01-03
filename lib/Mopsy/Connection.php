@@ -30,38 +30,33 @@
 
 namespace Mopsy;
 
-use Mopsy\Connection\Configuration;
-
-use Mopsy\Container;
-use Mopsy\Channel;
+use InvalidArgumentException;
 use Mopsy\Channel\Options;
-use PhpAmqpLib\Channel\AMQPChannel;
-use PhpAmqpLib\Connection\AMQPConnection;
-use \InvalidArgumentException;
+use Mopsy\Connection\Configuration;
 
 class Connection
 {
     /**
      *
-     * @var Mopsy\Container
+     * @var Container
      */
     protected $container;
 
     /**
      *
-     * @var AMQPConnection
+     * @var Connection
      */
     protected $connection;
 
     /**
      *
-     * @var Mopsy\Connection\Configuration
+     * @var Connection\Configuration
      */
     protected $configuration;
 
     /**
      *
-     * @var Mopsy\Channel
+     * @var Channel
      */
     protected $channel;
 
@@ -91,22 +86,22 @@ class Connection
 
     /**
      *
-     * @var Mopsy\Channel\Options
+     * @var Channel\Options
      */
     protected $exchangeOptions;
 
     /**
      *
-     * @var Mopsy\Channel\Options
+     * @var Channel\Options
      */
     protected $queueOptions;
 
     /**
      * Class constructor
      *
-     * @param Mopsy\Container $container
-     * @param AMQPConnection $connection
-     * @param AMQPChannel|null $channel
+     * @param Container $container
+     * @param Configuration $configuration
+     * @param Channel|null $channel
      */
     public function __construct(
         Container $container,
@@ -152,7 +147,9 @@ class Connection
         $this->channels[$this->channel->getChannelId()] = $this->channel;
         $this->connection->channels[$this->channel->getChannelId()] = $this->channel;
 
+        /** @var Channel\Options queueOptions */
         $this->exchangeOptions = $container->newInstance('Mopsy\Channel\Options');
+        /** @var Channel\Options queueOptions */
         $this->queueOptions = $container->newInstance('Mopsy\Channel\Options');
 
         /*
@@ -194,9 +191,9 @@ class Connection
      *
      * @param Container $container
      * @param Configuration $configuration
-     * @param Mopsy\Channel $channel
+     * @param Channel $channel
      *
-     * @return \Mopsy\Connection
+     * @return Connection
      */
     public static function getInstance(
         Container $container,
@@ -222,7 +219,7 @@ class Connection
 
     /**
      *
-     * @return \Mopsy\Container
+     * @return Container
      */
     public function getContainer()
     {
@@ -231,7 +228,7 @@ class Connection
 
     /**
      *
-     * @return \PhpAmqpLib\Connection\AMQPConnection
+     * @return Connection
      */
     public function getAMQPConnection()
     {
@@ -240,7 +237,7 @@ class Connection
 
     /**
      *
-     * @return \Mopsy\Connection\Configuration
+     * @return Connection\Configuration
      */
     public function getConfiguration()
     {
@@ -249,7 +246,7 @@ class Connection
 
     /**
      *
-     * @return \Mopsy\Connection - Provides fluent interface
+     * @return $this Connection - Provides fluent interface
      */
     public function enableDebug()
     {
@@ -259,7 +256,7 @@ class Connection
 
     /**
      *
-     * @return \Mopsy\Connection - Provides fluent interface
+     * @return $this Connection - Provides fluent interface
      */
     public function disableDebug()
     {
@@ -269,7 +266,7 @@ class Connection
 
     /**
      *
-     * @return \Mopsy\Channel\Options
+     * @return Channel\Options
      */
     public function getExchangeOptions()
     {
@@ -282,7 +279,7 @@ class Connection
      *
      * @throws InvalidArgumentException
      *
-     * @return \Mopsy\Connection - Provides fluent interface
+     * @return $this Connection - Provides fluent interface
      */
     public function setExchangeOptions(Options $options)
     {
@@ -305,7 +302,7 @@ class Connection
      *
      * @param Options $options
      *
-     * @return \Mopsy\Connection - Provides fluent interface
+     * @return $this Connection - Provides fluent interface
      */
     public function setQueueOptions(Options $options)
     {
@@ -326,7 +323,7 @@ class Connection
      *
      * @param string $routingKey
      *
-     * @return \Mopsy\Connection - Provides fluent interface
+     * @return $this Connection - Provides fluent interface
      */
     public function setRoutingKey($routingKey)
     {
@@ -352,7 +349,7 @@ class Connection
      *
      * @param string $consumerTag
      *
-     * @return \Mopsy\Connection - Provides fluent interface
+     * @return $this Connection - Provides fluent interface
      */
     public function setConsumerTag($consumerTag)
     {

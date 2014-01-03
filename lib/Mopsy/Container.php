@@ -46,7 +46,7 @@ class Container implements \ArrayAccess
      * @param string $key The name of a service to set in the container
      * @param mixed $value A closure or object representing a service
      *
-     * @return Mopsy\Container - Provides fluent interface
+     * @return Container - Provides fluent interface
     */
     public function set($key, $value = null)
     {
@@ -60,6 +60,8 @@ class Container implements \ArrayAccess
      * @param string $key The name of a service to get from the container
      *
      * @return mixed A closure or object representing a service
+     *               
+     * @throws \InvalidArgumentException
      */
     public function get($key)
     {
@@ -78,6 +80,8 @@ class Container implements \ArrayAccess
      * Check to see if a service has been filled into the container
      *
      * @param string $key The name of a service to check in the container
+     *                    
+     * @return bool
      */
     public function has($key)
     {
@@ -89,10 +93,11 @@ class Container implements \ArrayAccess
      *
      * This method will populate any services that have been wired into the container
      *
-     * @param string $class Class name to instantiate
-     * @param array $params An optional array of parameters to be passed into
-     *                      the constructor of a new instance
-     * @return Instance of the class sent in as a parameter
+     * @param string $class  - Class name to instantiate.
+     * @param array  $params - Optional parameters array for $class constructor.
+     * @param array  $ignore
+     * 
+     * @return mixed - An instance of the class sent in as a parameter
      */
     public function newInstance($class, array $params = null, array $ignore = array())
     {
@@ -132,10 +137,12 @@ class Container implements \ArrayAccess
     }
 
     /**
-     * Identify setters elligible for service injection and set them
+     * Identify setters eligible for service injection and set them.
      *
-     * @param \ReflectionClass $reflection A reflection of {@link $obj}
-     * @param object $obj The object to call setters on
+     * @param \ReflectionClass $reflection A reflection of {@link $obj}.
+     * @param object $obj The object to call setters on.
+     * @param array  $ignore
+     *         
      * @uses get()
      */
     protected function injectSetters(\ReflectionClass $reflection, $obj, array $ignore = array())
